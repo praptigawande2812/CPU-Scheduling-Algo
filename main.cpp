@@ -70,3 +70,94 @@ void fillInWaitTime(){
         }
     }
 }
+
+//FCFS
+void firstComeFirstServe()
+{
+    int time = getArrivalTime(processes[0]);
+    for (int i = 0; i < process_count; i++)
+    {
+        int processIndex = i;
+        int arrivalTime = getArrivalTime(processes[i]);
+        int serviceTime = getServiceTime(processes[i]);
+
+        finishTime[processIndex] = (time + serviceTime);
+        turnAroundTime[processIndex] = (finishTime[processIndex] - arrivalTime);
+        normTurn[processIndex] = (turnAroundTime[processIndex] * 1.0 / serviceTime);
+
+        for (int j = time; j < finishTime[processIndex]; j++)
+            timeline[j][processIndex] = '*';
+        for (int j = arrivalTime; j < time; j++)
+            timeline[j][processIndex] = '.';
+        time += serviceTime;
+    }
+}
+
+//SJF
+void shortestJobFirst()
+{
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq; // pair of service time and index
+    int j = 0;
+    for (int i = 0; i < last_instant; i++)
+    {
+        while(j<process_count && getArrivalTime(processes[j]) <= i){
+            pq.push(make_pair(getServiceTime(processes[j]), j));
+            j++;
+        }
+        if (!pq.empty())
+        {
+            int processIndex = pq.top().second;
+            int arrivalTime = getArrivalTime(processes[processIndex]);
+            int serviceTime = getServiceTime(processes[processIndex]);
+            pq.pop();
+
+            int temp = arrivalTime;
+            for (; temp < i; temp++)
+                timeline[temp][processIndex] = '.';
+
+            temp = i;
+            for (; temp < i + serviceTime; temp++)
+                timeline[temp][processIndex] = '*';
+
+            finishTime[processIndex] = (i + serviceTime);
+            turnAroundTime[processIndex] = (finishTime[processIndex] - arrivalTime);
+            normTurn[processIndex] = (turnAroundTime[processIndex] * 1.0 / serviceTime);
+            i = temp - 1;
+        }
+    }
+}
+
+//SRTF
+void shortestRemainingTimeFirst()
+{
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
+    int j = 0;
+    for (int i = 0; i < last_instant; i++)
+    {
+        while(j<process_count &&getArrivalTime(processes[j]) == i){
+            pq.push(make_pair(getServiceTime(processes[j]), j));
+            j++;
+        }
+        if (!pq.empty())
+        {
+            int processIndex = pq.top().second;
+            int remainingTime = pq.top().first;
+            pq.pop();
+            int serviceTime = getServiceTime(processes[processIndex]);
+            int arrivalTime = getArrivalTime(processes[processIndex]);
+            timeline[i][processIndex] = '*';
+
+            if (remainingTime == 1) // process finished
+            {
+                finishTime[processIndex] = i + 1;
+                turnAroundTime[processIndex] = (finishTime[processIndex] - arrivalTime);
+                normTurn[processIndex] = (turnAroundTime[processIndex] * 1.0 / serviceTime);
+            }
+            else
+            {
+                pq.push(make_pair(remainingTime - 1, processIndex));
+            }
+        }
+    }
+    fillInWaitTime();
+}
