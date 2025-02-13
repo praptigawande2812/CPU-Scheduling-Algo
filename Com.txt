@@ -1,0 +1,17 @@
+input line 1
+g++ main.cpp -o lab4
+
+
+input line 2
+.\lab4
+trace
+1
+20
+5
+A,0,3
+B,2,6
+C,4,4
+D,6,5
+E,8,2
+
+https://chatgpt.com/c/6735c8a2-f178-8005-9679-8ab529f4912f
